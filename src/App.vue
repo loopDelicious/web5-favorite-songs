@@ -6,12 +6,17 @@ import { Web5 } from '@tbd54566975/web5';
 
 let web5;
 let myDid;
-const songs = ref([]);
+let forms = [
+  { name: '', artist: '' },
+  { name: '', artist: '' },
+  { name: '', artist: '' },
+]
+let tracks = ref([]);
 
 onBeforeMount(async () => {
   ({ web5, did: myDid } = await Web5.connect());
 
-  // Populate songs from DWN
+  // Populate tracks from DWN
   const { records } = await web5.dwn.records.query({
     message: {
       filter: {
@@ -21,50 +26,25 @@ onBeforeMount(async () => {
     }
   });
 
-  // Add entry to songs array
+  // Add entry to tracks array
   for (let record of records) {
     const data = await record.data.json();
-    const song = { 
+    console.log(data)
+    const track = { 
       record, 
-      title: data.title, 
-      artist: data.artist, 
+      name: data.name, 
+      artist: data.artist,
       image: data.image, 
       id: record.id 
     };
-    songs.value.push(song);
+    tracks.value.push(track);
   }
-
-  // Provide a fallback album art image
-  // const imgUrl = new URL(`./assets/notes.jpeg`, import.meta.url).href;
 });
 
-// // Function to fetch the image and convert it to base64
-// async function fetchAndEncodeImageToBase64(url) {
-//   try {
-//     const response = await fetch(url);
-//     if (!response.ok) {
-//       throw new Error(`Failed to fetch the image. Status: ${response.status} ${response.statusText}`);
-//     }
-
-//     const imageBlob = await response.blob();
-//     const reader = new FileReader();
-
-//     // Convert the image Blob to base64
-//     reader.onloadend = () => {
-//       const base64String = reader.result.split(',')[1];
-//       console.log(base64String); // Base64 encoded image data
-//     };
-
-//     reader.readAsDataURL(imageBlob);
-//   } catch (error) {
-//     console.error(error);
-//   }
-// }
-
 // Fetch image
-async function getImage(title, artist) {
+async function getImage(name, artist) {
   try {
-    const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${import.meta.env.VITE_LAST_FM_KEY}&artist=${artist}&track=${title}&format=json`);
+    const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${import.meta.env.VITE_LAST_FM_KEY}&artist=${artist}&track=${name}&format=json`);
     const data = await response.json();
     if (
       data &&
@@ -85,26 +65,23 @@ async function getImage(title, artist) {
   }
 }
 
-// Adding songs
-const newTitle = ref('');
-const newArtist= ref('');
+// Adding tracks
+async function addTrack(form) {
 
-async function addSong() {
+  let imageURL = await getImage(form.name, form.artist)
 
-  let imageURL = await getImage(newTitle.value, newArtist.value)
-
-  const songData = {
-    title: newTitle.value,
-    artist: newArtist.value,
+  const trackData = {
+    name: form.name,
+    artist: form.artist,
     image: imageURL
   };
 
-  newTitle.value = '';
-  newArtist.value = '';
+  form.name = ''
+  form.artist = ''
 
   // Create the record in DWN
   const { record } = await web5.dwn.records.create({
-    data    : songData,
+    data    : trackData,
     message : {
       schema     : 'http://schema.org/MusicPlaylist',
       dataFormat : 'application/json'
@@ -114,63 +91,38 @@ async function addSong() {
   // add DWeb message recordId as a way to reference the message for further operations
   // e.g. updating it or overwriting it
   const data = await record.data.json();
-  const song = { 
+  const track = { 
     record, 
-    title: data.title, 
+    name: data.name,
     artist: data.artist, 
     image: data.image, 
     id: record.id 
   };
-  songs.value.push(song);
+  tracks.value.push(track);
 }
 
-// Delete Song
-async function deleteSong(songItem) {
-  let deletedSong;
+// Delete Track
+async function deleteTrack(trackItem) {
+  let deletedTrack;
   let index = 0;
 
-  for (let song of songs.value) {
-    if (songItem.id === song.id) {
-      deletedSong = song;
+  for (let track of tracks.value) {
+    if (trackItem.id === track.id) {
+      deletedTrack = track;
       break;
     }
     index ++;
   }
 
-  songs.value.splice(index, 1);
+  tracks.value.splice(index, 1);
 
   // Delete the record in DWN
   await web5.dwn.records.delete({
     message: {
-      recordId: deletedSong.id
+      recordId: deletedTrack.id
     }
   });
 }
-
-// // Toggling ToDo Status
-// async function toggleTodoComplete(todoItem) {
-//   let toggledTodo;
-//   let updatedTodoData;
-
-//   for (let todo of todos.value) {
-//     if (todoItem.id === todo.id) {
-//       toggledTodo = todo;
-//       todo.data.completed = !todo.data.completed;
-//       updatedTodoData = { ...toRaw(todo.data) };
-//       break;
-//     }
-//   }
-
-//   // Get record in DWN
-//   const { record } = await web5.dwn.records.read({
-//     message: {
-//       recordId: toggledTodo.id,
-//     }
-//   });
-
-//   // Update the record in DWN
-//   await record.update({ data: updatedTodoData });
-// }
 
 </script>
 
@@ -183,20 +135,20 @@ async function deleteSong(songItem) {
       </h2>
     </div>
 
-    <!-- Add song Form -->
-    <div class="mt-16">
-      <form class="flex space-x-4" @submit.prevent="addSong">
+    <!-- Add track Form -->
+    <div class="mt-16" v-for="(form, index) in forms" :key="index">
+      <form class="flex space-x-4" @submit.prevent="addTrack(form, index)">
         <div class="border-b border-gray-200 sm:w-full">
-          <label for="add-song" class="sr-only">Add a title</label>
+          <label for="'add-track-' + index" class="sr-only">Add a title</label>
           <textarea
-            rows="1" name="add-song" id="add-song" v-model="newTitle"
-            @keydown.enter.exact.prevent="addSong"
+            rows="1" name="'add-track-' + index" id="'add-track-' + index" ref="titles" v-model="form.name"
+            @keydown.enter.exact.prevent="addTrack(form, index)"
             class="block border-0 border-transparent focus:ring-0 p-0 pb-2 resize-none sm:text-sm w-96"
             placeholder="Title" />
           <label for="add-artist" class="sr-only">Add an artist</label>
           <textarea
-            rows="1" name="add-artist" id="add-artist" v-model="newArtist"
-            @keydown.enter.exact.prevent="addSong"
+            rows="1" name="'add-artist-' + index" id="'add-artist-' + index" ref="artists" v-model="form.artist"
+            @keydown.enter.exact.prevent="addTrack(form, index)"
             class="block border-0 border-transparent focus:ring-0 p-0 pb-2 resize-none sm:text-sm w-96"
             placeholder="Artist" />
         </div>
@@ -205,21 +157,18 @@ async function deleteSong(songItem) {
         </button>
       </form>
     </div>
-    <!-- Songs -->
-    <div v-if="(songs.length > 0)" class="border-gray-200 border-t border-x mt-16 rounded-lg shadow-md sm:max-w-xl sm:mx-auto sm:w-full">
-      <div v-for="song in songs" :key="song" class="border-b border-gray-200 flex items-center p-4">
-        <!-- <div @click="toggleTodoComplete(todo)" class="cursor-pointer">
-          <CheckCircleIcon class="h-8 text-gray-200 w-8" :class="{ 'text-green-500': todo.data.completed }" />
-        </div> -->
+    <!-- Tracks -->
+    <div v-if="(tracks.length > 0)" class="border-gray-200 border-t border-x mt-16 rounded-lg shadow-md sm:max-w-xl sm:mx-auto sm:w-full">
+      <div v-for="track in tracks" :key="track" class="border-b border-gray-200 flex items-center p-4">
         <div>
-          <img :src="(song.image)" alt="album image" width="70"/>
+          <img :src="(track.image)" alt="album image" width="70"/>
         </div>
         <div class="font-light ml-3 text-gray-500 text-xl">
-          {{ song.title }} by {{ song.artist }}
+          {{ track.name }} by {{ track.artist }}
         </div>
-        <!-- Delete Song -->
+        <!-- Delete Track -->
         <div class="ml-auto">
-          <div @click="deleteSong(song)" class="cursor-pointer">
+          <div @click="deleteTrack(track)" class="cursor-pointer">
             <TrashIcon class="h-8 text-gray-200 w-8" :class="'text-red-500'" />
           </div>
         </div>
