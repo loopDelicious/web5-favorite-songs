@@ -1,0 +1,47 @@
+{
+  "name": "favorite-songs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:unit": "vitest",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.2",
+    "@headlessui/vue": "1.7.4",
+    "@noble/ed25519": "1.7.1",
+    "@vueuse/core": "9.6.0",
+    "multiformats": "10.0.2",
+    "uuid": "9.0.0",
+    "varint": "6.0.0",
+    "@heroicons/vue": "1.0.6",
+    "vue-toastification": "2.0.0-rc.5",
+    "@tbd54566975/web5": "0.7.11"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.2.0",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "autoprefixer": "10.4.13",
+    "@vue/eslint-config-prettier": "^7.1.0",
+    "@vue/test-utils": "^2.3.2",
+    "eslint": "^8.39.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-vue": "^9.11.0",
+    "@esbuild-plugins/node-globals-polyfill": "0.2.3",
+    "@esbuild-plugins/node-modules-polyfill": "0.2.2",
+    "jsdom": "^22.1.0",
+    "prettier": "^2.8.8",
+    "tailwindcss": "3.2.4",
+    "@tailwindcss/forms": "0.5.3",
+    "postcss": "8.4.19",
+    "rollup-plugin-polyfill-node": "0.12.0",
+    "vite": "^4.3.9",
+    "vitest": "^0.32.0"
+  }
+}
