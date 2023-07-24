@@ -29,7 +29,7 @@ onBeforeMount(async () => {
   // Add entry to tracks array
   for (let record of records) {
     const data = await record.data.json();
-    console.log(data)
+    // console.log(data)
     const track = { 
       record, 
       name: data.name, 
