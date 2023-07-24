@@ -12,6 +12,11 @@ jobs:
     env:
       VITE_LAST_FM_KEY: ${{ secrets.VITE_LAST_FM_KEY }}
     steps:
+      - name: Setup Node.js for use with actions
+        uses: actions/setup-node@v2
+        with:
+          version:  18.x
+          
       - name: Checkout repository
         uses: actions/checkout@v2
   
