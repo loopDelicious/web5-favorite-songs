@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount, ref, toRaw } from 'vue';
 import { PlusIcon as PlusIconMini } from '@heroicons/vue/solid';
-import { CheckCircleIcon, TrashIcon } from '@heroicons/vue/outline';
+import { TrashIcon } from '@heroicons/vue/outline';
 import { Web5 } from '@tbd54566975/web5';
 
 let web5;
@@ -133,7 +133,6 @@ async function deleteTrack(trackItem) {
         My Favorite Songs
       </h2>
     </div>
-
     <!-- Add track Form -->
     <div class="mt-16" v-for="(form, index) in forms" :key="index">
       <form class="flex space-x-4" @submit.prevent="addTrack(form, index)">
