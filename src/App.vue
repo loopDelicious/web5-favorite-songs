@@ -43,7 +43,7 @@ onBeforeMount(async () => {
 // Fetch image
 async function getImage(name, artist) {
   try {
-    const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${import.meta.env.VITE_LAST_FM_KEY}&artist=${artist}&track=${name}&format=json`);
+    const response = await fetch(`https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${import.meta.env.VITE_LAST_FM_KEY}&artist=${artist}&track=${name}&format=json`);
     const data = await response.json();
     if (
       data &&
